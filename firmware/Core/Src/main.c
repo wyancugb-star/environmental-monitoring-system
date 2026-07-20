@@ -27,7 +27,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
-#include "lsens.h"
+#include "acq_adc.h"
+#include "usmart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,7 +49,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+#define RX_BUFFER_SIZE 64
+uint8_t rx_buffer[RX_BUFFER_SIZE];
+uint8_t usmart_rx_flag;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -70,7 +73,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-  uint8_t adcx;
+  SensorData_t acd_data;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -95,21 +98,31 @@ int main(void)
   MX_IWDG_Init();
   MX_FSMC_Init();
   MX_ADC3_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   LCD_Init();
+  usmart_dev.init(84); 	// usmart timing reference: 84MHz (APB1 timer clock)	
+  HAL_UARTEx_ReceiveToIdle_IT(&huart1, rx_buffer, RX_BUFFER_SIZE); 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    adcx=Lsens_Get_Val();
-		LCD_ShowxNum(30+10*8,130,adcx,3,24,0);//显示ADC的值 
+    acd_data=acq_read();
+    
+		LCD_ShowxNum(30+10*8,130,acd_data.light_pct,3,24,0);//显示ADC的值 
     LCD_ShowString(70+10*8,130,10,3,24,"%");//显示ADC的值 
+    LCD_ShowxNum(30+10*8,200,acd_data.temp_c,3,24,0);//显示ADC的值 
     HAL_IWDG_Refresh(&hiwdg); 
+   if (usmart_rx_flag) 
+   {
+      usmart_rx_flag = 0;
+      usmart_execute((char *)rx_buffer);
+   }
 
     /* USER CODE END WHILE */
-     
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -162,7 +175,38 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+/**
+ * @brief  UART idle-line reception callback: null-terminates the received
+ *         buffer and passes it to usmart for command parsing/execution.
+ */
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+    if (huart->Instance == USART1)
+    {
+        if (Size < RX_BUFFER_SIZE)
+        {
+            rx_buffer[Size] = '\0';   /* usmart expects a null-terminated string */
+        }
 
+        usmart_rx_flag = 1;
+
+        HAL_UARTEx_ReceiveToIdle_IT(&huart1, rx_buffer, RX_BUFFER_SIZE);
+    }
+}
+
+/**
+ * @brief  Redirects printf() output to USART1 (required for usmart's
+ *         command output and debug printf calls).
+ */
+#ifdef __GNUC__
+int __io_putchar(int ch)
+#else
+int fputc(int ch, FILE *f)
+#endif
+{
+    HAL_UART_Transmit(&huart1, (uint8_t*)&ch, 1, HAL_MAX_DELAY);
+    return ch;
+}
 /* USER CODE END 4 */
 
 /**

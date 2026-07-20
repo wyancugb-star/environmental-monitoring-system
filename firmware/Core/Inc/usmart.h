@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 #include "usmart_str.h"
-#include <stdint.h>
+#include "main.h"
 
 /* --- Configuration --- */
 #define MAX_FNAME_LEN   30   /* Max function name length; must fit the longest registered name */

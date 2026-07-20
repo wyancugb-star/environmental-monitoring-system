@@ -12,7 +12,6 @@
   */
 #include "usmart.h"
 #include "usart.h"
-#include <stdio.h>
 
 /* Built-in system commands (not user-registered functions) */
 const char *sys_cmd_tab[] =
