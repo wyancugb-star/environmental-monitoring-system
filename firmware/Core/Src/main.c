@@ -20,6 +20,7 @@
 #include "main.h"
 #include "adc.h"
 #include "iwdg.h"
+#include "rtc.h"
 #include "usart.h"
 #include "gpio.h"
 #include "fsmc.h"
@@ -29,6 +30,7 @@
 #include "lcd.h"
 #include "acq_adc.h"
 #include "usmart.h"
+#include "rtc_mgr.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,7 +75,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-  SensorData_t acd_data;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -82,7 +83,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  uint32_t last_tick = 0;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -99,27 +100,45 @@ int main(void)
   MX_FSMC_Init();
   MX_ADC3_Init();
   MX_ADC1_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
   LCD_Init();
-  usmart_dev.init(84); 	// usmart timing reference: 84MHz (APB1 timer clock)	
-  HAL_UARTEx_ReceiveToIdle_IT(&huart1, rx_buffer, RX_BUFFER_SIZE); 
+  acq_adc_init();          // acquisition module init (currently a no-op, reserved for future setup)
+  usmart_dev.init(84); 	    // usmart timing reference: 84MHz (APB1 timer clock)
+  HAL_UARTEx_ReceiveToIdle_IT(&huart1, rx_buffer, RX_BUFFER_SIZE);
+  rtc_mgr_init();           // sentinel-default check per REQ-SYS-003; leaves prior time intact if already set (REQ-SYS-004)
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    acd_data=acq_read();
-    
-		LCD_ShowxNum(30+10*8,130,acd_data.light_pct,3,24,0);//显示ADC的值 
-    LCD_ShowString(70+10*8,130,10,3,24,"%");//显示ADC的值 
-    LCD_ShowxNum(30+10*8,200,acd_data.temp_c,3,24,0);//显示ADC的值 
-    HAL_IWDG_Refresh(&hiwdg); 
-   if (usmart_rx_flag) 
-   {
+    if (HAL_GetTick() - last_tick >= 1000)   // 1Hz schedule per design.md §3.6 -- >= not ==, so a slightly-late loop iteration doesn't skip a beat
+    {
+      last_tick = HAL_GetTick();
+
+      char date[11], time[9];
+      rtc_mgr_get(date, time);            // read current RTC time (REQ-DISP-001)
+
+      SensorData_t data = acq_read();      // read light + internal temp, clamp/_err applied (REQ-ACQ-001/002/003, REQ-SYS-002)
+
+      // --- LCD display: work in progress, left as-is for now ---
+      LCD_ShowxNum(30+10*8,130,data.light_pct,3,24,0);//显示ADC的值
+      LCD_ShowString(70+10*8,130,10,3,24,"%");//显示ADC的值
+      LCD_ShowxNum(30+10*8,200,data.temp_c,3,24,0);//显示ADC的值
+      LCD_ShowString(30+10*8,270,400,3,24,date);//显示ADC的值
+      LCD_ShowString(30+10*8,320,400,3,24,time);//显示ADC的值
+
+      //uart_tx_frame(date, time, &data);    // transmit UART data frame (REQ-COMM-001/002)
+    }
+
+    HAL_IWDG_Refresh(&hiwdg);   // fed every loop iteration, not just every 1s -- see design.md §3.6/§4 (REQ-NFR-002)
+
+    if (usmart_rx_flag)
+    {
       usmart_rx_flag = 0;
       usmart_execute((char *)rx_buffer);
-   }
+    }
 
     /* USER CODE END WHILE */
 
@@ -145,8 +164,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE
+                              |RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
@@ -178,6 +199,14 @@ void SystemClock_Config(void)
 /**
  * @brief  UART idle-line reception callback: null-terminates the received
  *         buffer and passes it to usmart for command parsing/execution.
+ * @note   Only sets a flag here -- usmart_execute() itself runs from the
+ *         main loop (see WHILE block above), not from this ISR context.
+ *         Calling it directly here previously caused a deadlock: functions
+ *         invoked via usmart that use HAL_Delay() (e.g. light_adc_raw_print())
+ *         spin on HAL_GetTick(), which only advances via the SysTick
+ *         interrupt -- SysTick can't preempt while still inside this UART
+ *         RX ISR, so the wait condition never becomes true. See design.md
+ *         §4 (Known Pitfall Carried Forward).
  */
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
@@ -196,7 +225,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 
 /**
  * @brief  Redirects printf() output to USART1 (required for usmart's
- *         command output and debug printf calls).
+ *         command output and debug printf calls, e.g. light_adc_raw_print()).
  */
 #ifdef __GNUC__
 int __io_putchar(int ch)

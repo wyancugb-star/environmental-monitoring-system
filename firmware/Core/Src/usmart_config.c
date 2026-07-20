@@ -25,6 +25,7 @@
 #include "usmart_str.h"
 #include "lcd.h"
 #include "acq_adc.h"
+#include "rtc_mgr.h"
 
 /**
  * @brief  usmart-callable wrapper: displays a string at the given position.
@@ -87,6 +88,7 @@ const usmart_func_t usmart_nametab[] =
     {(void*)lcd_show_num,  "void lcd_show_num(uint16_t x,uint16_t y,uint8_t size,uint32_t num)"},
     {(void*)light_adc_raw_print, "void light_adc_raw_print(void)"},
     {(void*)temp_adc_raw_print, "void temp_adc_raw_print(void)"},
+    {(void*)set_rtc_time, "void set_rtc_time(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec)"},
 };					  
 
 /**

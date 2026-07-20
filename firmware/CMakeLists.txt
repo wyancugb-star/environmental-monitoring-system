@@ -47,6 +47,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     Core/Src/acq_adc.c
     Core/Src/lcd.c
+    Core/Src/rtc_mgr.c
     Core/Src/usmart.c
     Core/Src/usmart_str.c
     Core/Src/usmart_config.c
