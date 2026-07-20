@@ -27,7 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lcd.h"
+#include "lcd_disp.h"
 #include "acq_adc.h"
 #include "usmart.h"
 #include "rtc_mgr.h"
@@ -102,7 +102,7 @@ int main(void)
   MX_ADC1_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-  LCD_Init();
+  lcd_disp_init();
   acq_adc_init();          // acquisition module init (currently a no-op, reserved for future setup)
   usmart_dev.init(84); 	    // usmart timing reference: 84MHz (APB1 timer clock)
   HAL_UARTEx_ReceiveToIdle_IT(&huart1, rx_buffer, RX_BUFFER_SIZE);
@@ -123,11 +123,7 @@ int main(void)
       SensorData_t data = acq_read();      // read light + internal temp, clamp/_err applied (REQ-ACQ-001/002/003, REQ-SYS-002)
 
       // --- LCD display: work in progress, left as-is for now ---
-      LCD_ShowxNum(30+10*8,130,data.light_pct,3,24,0);//显示ADC的值
-      LCD_ShowString(70+10*8,130,10,3,24,"%");//显示ADC的值
-      LCD_ShowxNum(30+10*8,200,data.temp_c,3,24,0);//显示ADC的值
-      LCD_ShowString(30+10*8,270,400,3,24,date);//显示ADC的值
-      LCD_ShowString(30+10*8,320,400,3,24,time);//显示ADC的值
+      lcd_disp_update(date, time, &data);
 
       //uart_tx_frame(date, time, &data);    // transmit UART data frame (REQ-COMM-001/002)
     }

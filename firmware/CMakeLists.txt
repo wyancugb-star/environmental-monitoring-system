@@ -47,6 +47,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     Core/Src/acq_adc.c
     Core/Src/lcd.c
+    Core/Src/lcd_disp.c
     Core/Src/rtc_mgr.c
     Core/Src/usmart.c
     Core/Src/usmart_str.c
@@ -71,4 +72,8 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
 
     # Add user defined libraries
+)
+
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
+    -u _printf_float
 )

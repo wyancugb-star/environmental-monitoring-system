@@ -22,3 +22,24 @@ normally).
 **Related:** Anticipated in `design.md` §4 (Known Pitfall Carried
 Forward) before this bug occurred — design doc predicted both the
 mechanism and the fix correctly.
+
+## #002 — sprintf("%.1f", ...) produced no output on LCD
+
+**Date:** 2026-07-20
+**Symptom:** Temperature field silently failed to display on LCD after
+switching from LCD_ShowxNum to sprintf+LCD_ShowString (needed for
+float/negative value support). No crash, no error, just missing text.
+
+**Root Cause:** newlib-nano (the default reduced C library linked by
+arm-none-eabi-gcc for STM32 projects) excludes floating-point format
+specifier support (%f, %.1f, etc.) by default to save flash space.
+sprintf() silently failed to produce the expected characters.
+
+**Fix:** Added `-u _printf_float` to the linker options in
+CMakeLists.txt, forcing the linker to include newlib's float-capable
+printf/sprintf implementation. Required a full clean rebuild, not
+just incremental, since this is a link-stage change.
+
+**Note:** Ruled out UART/波特率 and VS Code debugger artifacts first
+before finding the real cause -- see troubleshooting steps in this
+session for reference.
