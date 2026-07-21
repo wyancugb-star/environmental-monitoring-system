@@ -93,10 +93,11 @@ Each test case follows this structure:
 **Traces to:** REQ-DISP-002, REQ-NFR-003 (design-level feature, see `design.md` §3.3)
 **Preconditions:** DUT running normally.
 **Steps:**
-1. Sweep light from dark to bright; observe the light bar length.
-2. Warm the board area (e.g. cup hands around it) or note ambient temp changes; observe the temp bar color transitions at the 18°C and 28°C thresholds.
+1. Sweep light from dark to bright; observe the light bar length grows proportionally, with no full-bar flash/clear.
+2. Change the temperature (e.g. cup hands around the board, or note ambient drift); observe the temperature bar length changes proportionally to the [-10, 50]°C normalized range.
+3. Confirm both bars show a static black outline and static min/max axis labels ("0"/"100" for light, "-10"/"50" for temperature) that don't flicker or redraw each tick.
 
-**Expected Result:** Light bar length is proportional to LIGHT%. Temp bar color is blue <18°C, green 18–28°C, red >28°C, consistent with the numeric TEMP field at the same moment.
+**Expected Result:** Light bar length is proportional to LIGHT%, temp bar length is proportional to the normalized temperature, both use a fixed fill color with a visible black outline, and neither bar's outline/labels flicker or redraw on ticks where the underlying value is unchanged.
 
 ### TC-DISP-003-01: No visible flicker under normal operation
 **Traces to:** REQ-NFR-003
