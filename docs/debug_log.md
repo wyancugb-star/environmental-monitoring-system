@@ -40,6 +40,29 @@ CMakeLists.txt, forcing the linker to include newlib's float-capable
 printf/sprintf implementation. Required a full clean rebuild, not
 just incremental, since this is a link-stage change.
 
-**Note:** Ruled out UART/波特率 and VS Code debugger artifacts first
+**Note:** Ruled out UART/Baud and VS Code debugger artifacts first
 before finding the real cause -- see troubleshooting steps in this
 session for reference.
+
+## #003 — Overlapping/ghosting digits on large-font time display
+
+**Date:** 2026-07-20 (approximate, adjust to actual date)
+**Symptom:** After switching the time display to a custom 48pt bitmap
+font, digits appeared to overlap/smear together as the seconds ticked
+(e.g. "8" changing to "3" left visible remnants of the "8"'s strokes
+that didn't belong to "3").
+
+**Root Cause:** draw_glyph() only painted "on" pixels (bit == 0 in this
+font's polarity) and left "off" pixels untouched. When a new character's
+shape didn't cover the same pixels as the previous character, the
+previous character's leftover strokes were never cleared.
+
+**Fix:** draw_glyph() now clears the glyph's full bounding box to the
+background color before painting, guaranteeing every redraw starts from
+a clean background regardless of what was there before.
+
+**Related:** This traded away some of the delta-redraw flicker
+optimization (clearing+repainting a full glyph box, even for characters
+that changed, causes a brief flash). Mitigated by draw_string_delta()
+only calling draw_glyph() for character positions that actually
+changed, not the whole string every tick -- see lcd_disp.c.
