@@ -31,6 +31,7 @@
 #include "acq_adc.h"
 #include "usmart.h"
 #include "rtc_mgr.h"
+#include "uart_tx.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -125,7 +126,7 @@ int main(void)
       // --- LCD display: work in progress, left as-is for now ---
       lcd_disp_update(date, time, &data);
 
-      //uart_tx_frame(date, time, &data);    // transmit UART data frame (REQ-COMM-001/002)
+      uart_tx_frame(date, time, &data);    // transmit UART data frame (REQ-COMM-001/002)
     }
 
     HAL_IWDG_Refresh(&hiwdg);   // fed every loop iteration, not just every 1s -- see design.md §3.6/§4 (REQ-NFR-002)

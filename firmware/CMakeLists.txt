@@ -50,6 +50,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Core/Src/lcd.c
     Core/Src/lcd_disp.c
     Core/Src/rtc_mgr.c
+    Core/Src/uart_tx.c
     Core/Src/usmart.c
     Core/Src/usmart_str.c
     Core/Src/usmart_config.c
