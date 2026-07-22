@@ -20,7 +20,7 @@ This project follows a full V-model workflow — requirements → design → imp
 
 | Item | Detail |
 |------|--------|
-| MCU / Dev Board | ATK 探索者 (Explorer) STM32F407ZGT6 (正点原子) |
+| MCU / Dev Board | ATK-DNF407 V3.4 (Explorer) STM32F407ZGT6  |
 | LCD | ATK-MD0430, 4.3", NT35510 driver, FSMC 16-bit parallel interface |
 | Light Sensor | Onboard photoresistor, ADC3 |
 | Temperature Source | Internal STM32 temperature sensor, ADC1 (no external sensor) |
