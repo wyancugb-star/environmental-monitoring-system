@@ -20,7 +20,7 @@ This project follows a full V-model workflow — requirements → design → imp
 
 | Item | Detail |
 |------|--------|
-| MCU / Dev Board | ATK-DNF407 V3.4 (Explorer) STM32F407ZGT6  |
+| MCU / Dev Board | ATK 探索者 (Explorer) STM32F407ZGT6 (正点原子) |
 | LCD | ATK-MD0430, 4.3", NT35510 driver, FSMC 16-bit parallel interface |
 | Light Sensor | Onboard photoresistor, ADC3 |
 | Temperature Source | Internal STM32 temperature sensor, ADC1 (no external sensor) |
@@ -36,6 +36,7 @@ This project follows a full V-model workflow — requirements → design → imp
 - **Anti-flicker display**: partial/delta redraw for progress bars and large-font fields, avoiding full-screen clears at 1 Hz
 - **Watchdog-protected main loop**: independent watchdog (IWDG) fed every loop iteration; usmart command handling runs from the main loop rather than an interrupt context, avoiding a deadlock class of bug documented in `docs/debug_log.md`
 - **Host-side pipeline**: a serial reader (real hardware or a hardware-independent simulator), a resilient line parser, and SQLite-backed storage with time-range queries — developed and tested independently of firmware availability
+- **PyQt5 host GUI**: real-time DATE/TIME/TEMP/LIGHT display with `_ERR` red highlighting, live progress bars, rolling temp/light charts (matplotlib), historical view over preset time ranges (last 1 min/10 min/1 hour) via `Storage.query_range()`, and a Start/Stop workflow for switching between simulated and real-hardware data sources
 - **GUI-issued RTC time set**: the host GUI can set the device's RTC time via a `SET_TIME:` command over UART, parsed on the firmware side and coexisting with the usmart channel — both call the same `set_rtc_time()`, so persistence/echo behavior is identical regardless of which channel issued the command
 
 ## Data Format
@@ -88,14 +89,10 @@ environmental-monitoring-system/
 cd host
 pip install -r requirements.txt
 
-# Run against real hardware:
-python main.py --port COM4
-
-# Or without any hardware attached:
-python main.py --simulate
+python main.py
 ```
 
-Readings are persisted to `environmental_monitoring_system.db` (SQLite) as they arrive.
+This launches the PyQt5 GUI. In the app, choose "Simulate" or "Real Hardware" (with a COM port) and click Start. Readings are persisted to `environmental_monitoring_system.db` (SQLite) as they arrive; use the "Last 1 min / 10 min / 1 hour" buttons (after Stop) to view historical data, or the "Set RTC Time" control to set the device's clock over UART.
 
 Run the test suite (no hardware required):
 ```bash
@@ -119,9 +116,9 @@ This project follows a V-model documentation set. Each document traces to the on
 
 ## Roadmap / Known Gaps
 
-- **Host GUI** (PyQt5): live readout, chart, RTC-set control — not yet implemented
 - **`SerialReader` hardware-in-the-loop test**: deferred, requires a connected board (`@pytest.mark.hardware`, not yet written)
 - **24-hour soak test**: planned per `test_plan.md` TC-SYS-001-01, not yet executed
+- **`analysis.py` module** (`host_design.md` §3.5, pandas/matplotlib offline analysis): largely superseded by the GUI's built-in historical view, may not be needed as a separate module
 
 ## Out of Scope (this iteration)
 
