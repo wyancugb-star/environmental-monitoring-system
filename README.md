@@ -16,6 +16,12 @@ This project follows a full V-model workflow — requirements → design → imp
 - **Firmware** (`firmware/`): STM32F407-based, HAL library, CMake + VS Code toolchain. Samples light intensity and internal temperature once per second, displays them alongside RTC time on a 4.3" TFT LCD, and transmits a plain-text data frame over UART.
 - **Host** (`host/`): Python application that reads the UART stream (or a hardware-independent simulator), parses it, and persists readings to a local SQLite database.
 
+## Demo
+
+![Firmware LCD and host GUI showing synchronized live data](docs/images/demo.png)
+
+*Firmware LCD (right) and host GUI (left) displaying the same live reading in real time — a visual confirmation of the firmware↔host data contract (`requirements_spec.md` §6.1).*
+
 ## Hardware
 
 | Item | Detail |

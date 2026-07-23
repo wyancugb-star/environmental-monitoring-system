@@ -48,7 +48,6 @@ class MainWindow(QWidget):
         self.resize(600, 800)
 
         self.datetime_picker = QDateTimeEdit()
-        self.datetime_picker.setDateTime(QDateTime.currentDateTime())
 
         self.set_time_button = QPushButton("Set RTC Time")
         self.set_time_button.setEnabled(False)
@@ -248,6 +247,8 @@ class MainWindow(QWidget):
 
     def on_new_reading(self, reading):
         self.store.append(reading)
+
+        self.datetime_picker.setDateTime(QDateTime.currentDateTime())
 
         self.date_label.setText(f"DATE:{reading.date}")
 

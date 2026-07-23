@@ -251,7 +251,7 @@ Each test case follows this structure:
 | TC-COMM-003-01 | REQ-COMM-003 | | | |
 | TC-COMM-004-01 | REQ-COMM-003 | Deferred | | Requires host GUI |
 | TC-COMM-005-01 | §6.4 | | | |
-| TC-SYS-001-01 | REQ-SYS-001 | | | 24h soak |
+| TC-SYS-001-01 | REQ-SYS-001 | PASS (partial) | 2026-07-23 | Ran ~58 min (not full 24h). First 1h run showed 3 gaps (8s/14s/45s) coinciding with the board being physically handled for photos — invalidated, not attributable to firmware. Second clean run: 3469 frames, 0.03% frame-count deviation, 0 gaps >2s, 0 non-increasing timestamps, 0 sentinel-default readings. Full 24h run not yet executed. |
 | TC-SYS-002-01 | REQ-SYS-002 | | | |
 | TC-SYS-002-02 | REQ-SYS-002 | | | |
 | TC-SYS-003-01 | REQ-SYS-003 | | | |
