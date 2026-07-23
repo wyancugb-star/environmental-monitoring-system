@@ -1,6 +1,6 @@
 # Environmental Monitoring System
 
-An STM32-based environmental monitoring system that samples ambient light and internal chip temperature, displays real-time status on an LCD, and streams data over UART to a Python host application for logging, storage, and (in progress) visualization.
+An STM32-based environmental monitoring system that samples ambient light and internal chip temperature, displays real-time status on an LCD, and streams data over UART to a Python host application with a live GUI for logging, storage, and visualization.
 
 This project follows a full V-model workflow — requirements → design → implementation → test — on both the firmware and host sides, and is built as a portfolio project demonstrating embedded firmware development, host/firmware integration, and validation/test engineering practices.
 
@@ -10,7 +10,7 @@ This project follows a full V-model workflow — requirements → design → imp
 [Light Sensor]  ─┐
                  ├─→ [STM32 ADC] ─→ [RTC] ─→ [LCD Display]
 [Internal Temp] ─┘         │
-                           └─→ [UART] ─→ [Python Host: Parse + Store + (GUI, in progress)]
+                           └─→ [UART] ─→ [Python Host: Parse + Store + GUI]
 ```
 
 - **Firmware** (`firmware/`): STM32F407-based, HAL library, CMake + VS Code toolchain. Samples light intensity and internal temperature once per second, displays them alongside RTC time on a 4.3" TFT LCD, and transmits a plain-text data frame over UART.
@@ -116,9 +116,7 @@ This project follows a V-model documentation set. Each document traces to the on
 
 ## Roadmap / Known Gaps
 
-- **`SerialReader` hardware-in-the-loop test**: deferred, requires a connected board (`@pytest.mark.hardware`, not yet written)
 - **24-hour soak test**: planned per `test_plan.md` TC-SYS-001-01, not yet executed
-- **`analysis.py` module** (`host_design.md` §3.5, pandas/matplotlib offline analysis): largely superseded by the GUI's built-in historical view, may not be needed as a separate module
 
 ## Out of Scope (this iteration)
 

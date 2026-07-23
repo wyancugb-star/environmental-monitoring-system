@@ -1,8 +1,8 @@
 # Host-Side Traceability Matrix
 ## STM32 Environmental Monitoring System — Python Host Application
 
-**Document Version:** 1.1
-**Date:** 2026-07-23 (updated from 2026-07-16 baseline)
+**Document Version:** 1.2
+**Date:** 2026-07-23 (updated from v1.1)
 **Author:** Yan
 **Status:** Baseline
 **Source Documents:** `requirements_spec.md` v1.1 §6, `host_design.md` v1.0, `host_test_plan.md` v1.0
@@ -25,7 +25,7 @@ Consolidated view tying each host-side requirement/interface item to its design 
 | REQ-DISP-002 (host mirror) | Display most recent reading | §3.4 live readout, progress bars | TC-HOST-GUI-001 | ✅ Full |
 | Parser robustness (no formal REQ-ID; design-level concern) | Malformed/corrupted frames must not crash the app | §3.2 `parse_line()` failure handling | TC-HOST-PARSE-004 | ✅ Full |
 | Development-without-hardware capability (no formal REQ-ID; design-level concern) | `gui`/`storage`/tests must be verifiable before firmware is flashable | §3.1 `SimulatedReader`, §6 `--simulate` flag | TC-HOST-SIM-001, TC-HOST-SIM-002, all `No`-hardware cases in `host_test_plan.md` | ✅ Full |
-| End-to-end firmware↔host conformance | Real device output actually matches what the host expects | N/A (integration point, not a single module) | TC-HOST-HW-001 | ⚠️ Partial — blocked on hardware availability/firmware completion, not a design gap |
+| End-to-end firmware↔host conformance | Real device output actually matches what the host expects | N/A (integration point, not a single module) | TC-HOST-HW-001 | ✅ Full — implemented and passing (requires `--port` at run time) |
 
 ## 3. Firmware ↔ Host Bridge Points
 
@@ -43,7 +43,7 @@ The `SET_TIME:` command, previously the only contract item blocked on both sides
 
 ## 4. Coverage Gap Analysis
 
-- **TC-HOST-HW-001:** The only host-side test that cannot run purely against `SimulatedReader`. This is expected — some amount of "does the real thing actually work end-to-end" verification can never be fully replaced by simulation, and this matrix exists partly to make that boundary explicit rather than implicit.
+- **TC-HOST-HW-001:** Implemented and passing as of 2026-07-23 (`tests/test_hardware.py`, gated behind `@pytest.mark.hardware` and a `--port` CLI option). Not part of the default `pytest` run — this remains a deliberate boundary (some amount of "does the real thing actually work end-to-end" verification can never be fully replaced by simulation), not an unaddressed gap. Run explicitly via `pytest tests/test_hardware.py --port <COM>` when hardware is available.
 
 ## Revision History
 
@@ -51,3 +51,4 @@ The `SET_TIME:` command, previously the only contract item blocked on both sides
 |---------|------|---------|
 | 1.0 | 2026-07-16 | Initial baseline: host-side traceability table, firmware↔host bridge-point cross-reference, and coverage gap analysis |
 | 1.1 | 2026-07-23 | §6.4 GUI channel (SET_TIME:) updated to Full coverage on both firmware and host sides. Removed from coverage gap analysis. |
+| 1.2 | 2026-07-23 | TC-HOST-HW-001 marked implemented and passing (test_hardware.py + conftest.py + pytest.ini). Removed from coverage gap analysis as an unaddressed gap — the hardware-required nature is now a documented, deliberate boundary rather than a TODO. |
