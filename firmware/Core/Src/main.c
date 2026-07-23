@@ -134,7 +134,12 @@ int main(void)
     if (usmart_rx_flag)
     {
       usmart_rx_flag = 0;
-      usmart_execute((char *)rx_buffer);
+      // Check SET_TIME: (GUI channel, §6.4) first -- only fall through to
+      // usmart if this wasn't that kind of command.
+      if (!try_handle_set_time_command((char *)rx_buffer))
+      {
+          usmart_execute((char *)rx_buffer);
+      }
     }
 
     /* USER CODE END WHILE */

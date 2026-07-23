@@ -26,4 +26,15 @@ void rtc_mgr_get(char *date_out, char *time_out); // date_out: "YYYY-MM-DD", tim
  */
 void set_rtc_time(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
 
+/**
+ * @brief  Check whether a received UART line is a "SET_TIME:" command, and
+ *         if so, parse it and call set_rtc_time().
+ * @param  cmd  Null-terminated line received over UART (usmart-style rx buffer).
+ * @retval 1 if this was a SET_TIME: command (handled here, regardless of
+ *         whether parsing succeeded) -- caller should NOT also pass it to
+ *         usmart_execute(). 0 if this wasn't a SET_TIME: command at all --
+ *         caller should fall through to usmart_execute() as before.
+ */
+uint8_t try_handle_set_time_command(const char *cmd);
+
 #endif /* __RTC_MGR_H */

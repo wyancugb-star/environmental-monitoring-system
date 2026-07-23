@@ -1,8 +1,8 @@
 # Host-Side Test Plan
 ## STM32 Environmental Monitoring System — Python Host Application
 
-**Document Version:** 1.0
-**Date:** 2026-07-16
+**Document Version:** 1.1
+**Date:** 2026-07-23 (updated from 2026-07-16 baseline)
 **Author:** Yan
 **Status:** Baseline
 **Parent Documents:** `requirements_spec.md` v1.1 §6, `host_design.md` v1.0
@@ -170,7 +170,7 @@ GUI testing is inherently harder to automate exhaustively; these cases favor tar
 
 ### TC-HOST-GUI-003: "Set RTC Time" control sends the correct command string
 **Traces to:** §6.4 GUI channel, `host_design.md` §3.4
-**Hardware Required:** No for the command-formatting check (can assert on what would be written without an open port); **Yes** for confirming the device actually responds correctly.
+**Hardware Required:** No for the command-formatting check; Yes for confirming the device actually responds correctly (now executable — see firmware `test_plan.md` TC-COMM-004-01, no longer deferred).
 **Steps:**
 1. (No-hardware part) Set the date/time picker to a known value, click "Set", and intercept/mock the serial write call.
 2. (Hardware part, separate case) With a real device connected, repeat and confirm via TC-COMM-004-01 in the firmware test plan that the device accepts it.
@@ -206,7 +206,7 @@ GUI testing is inherently harder to automate exhaustively; these cases favor tar
 | TC-HOST-STORE-003 | No | | | |
 | TC-HOST-GUI-001 | No | | | |
 | TC-HOST-GUI-002 | No | | | |
-| TC-HOST-GUI-003 | Partial | | | Hardware part deferred to firmware TC-COMM-004-01 |
+| TC-HOST-GUI-003 | Yes | | | |
 | TC-HOST-HW-001 | Yes | | | Requires flashed board |
 
 ## 10. Requirements Traceability
@@ -225,3 +225,4 @@ GUI testing is inherently harder to automate exhaustively; these cases favor tar
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-07-20 | Initial baseline: parser, SimulatedReader, storage, GUI, and hardware-in-the-loop test cases; pass/fail template; traceability to requirements_spec.md §6 and host_design.md. Includes TC-HOST-PARSE-005 (empty/incomplete-field robustness) and TC-HOST-SIM-003 (`_ERR` reflects actual clamping, independent of `inject_errors`), added after issues were found during manual implementation and testing. |
+| 1.1 | 2026-07-23 | TC-HOST-GUI-003 updated: hardware-dependent part is now executable, no longer deferred, now that firmware's SET_TIME: parser is implemented |

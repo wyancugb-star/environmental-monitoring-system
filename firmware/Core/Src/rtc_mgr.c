@@ -21,6 +21,8 @@
 
 #define RTC_BKP_SET_FLAG   0xA5A5U   // marker written to RTC_BKP_DR1 once set_rtc_time() succeeds
 
+#define SET_TIME_PREFIX "SET_TIME:"
+
 /**
  * @brief  Write time+date to the RTC hardware, no side effects.
  * @details Shared by rtc_mgr_init() (sentinel default) and set_rtc_time()
@@ -96,4 +98,34 @@ void rtc_mgr_get(char *date_out, char *time_out)
 
     sprintf(date_out, "%04d-%02d-%02d", sDate.Year + 2000, sDate.Month, sDate.Date);
     sprintf(time_out, "%02d:%02d:%02d", sTime.Hours, sTime.Minutes, sTime.Seconds);
+}
+
+/**
+ * @brief  Parses "SET_TIME:YYYY-MM-DD,HH:MM:SS" and calls set_rtc_time().
+ * @details This is the GUI-facing command channel reserved in design.md §3.5,
+ *          coexisting with usmart on the same UART (requirements_spec.md §6.4).
+ *          It reuses set_rtc_time() directly -- same backup-flag persistence
+ *          (REQ-SYS-004) and same "RTC SET OK: ..." echo as the usmart path,
+ *          so there's exactly one place that actually writes the RTC.
+ */
+uint8_t try_handle_set_time_command(const char *cmd)
+{
+    size_t prefix_len = strlen(SET_TIME_PREFIX);
+
+    if (strncmp(cmd, SET_TIME_PREFIX, prefix_len) != 0) {
+        return 0; // not a SET_TIME: command -- let usmart_execute() handle it
+    }
+
+    int year, month, day, hour, min, sec;
+    int fields = sscanf(cmd + prefix_len, "%d-%d-%d,%d:%d:%d",
+                         &year, &month, &day, &hour, &min, &sec);
+
+    if (fields != 6) {
+        printf("SET_TIME parse error: expected SET_TIME:YYYY-MM-DD,HH:MM:SS\r\n");
+        return 1; // it WAS a SET_TIME: command, just malformed -- still don't fall through to usmart
+    }
+
+    set_rtc_time((uint16_t)year, (uint8_t)month, (uint8_t)day,
+                 (uint8_t)hour, (uint8_t)min, (uint8_t)sec);
+    return 1;
 }

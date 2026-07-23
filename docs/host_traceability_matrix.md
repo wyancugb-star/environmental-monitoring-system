@@ -1,8 +1,8 @@
 # Host-Side Traceability Matrix
 ## STM32 Environmental Monitoring System — Python Host Application
 
-**Document Version:** 1.0
-**Date:** 2026-07-16
+**Document Version:** 1.1
+**Date:** 2026-07-23 (updated from 2026-07-16 baseline)
 **Author:** Yan
 **Status:** Baseline
 **Source Documents:** `requirements_spec.md` v1.1 §6, `host_design.md` v1.0, `host_test_plan.md` v1.0
@@ -36,14 +36,13 @@ These are the specific places where the two independently-developed sides must a
 | Normal data frame format | `design.md` §3.4 `uart_tx_frame()`; tested by `test_plan.md` TC-COMM-001-01 | `host_design.md` §3.2 `parse_line()`; tested by `host_test_plan.md` TC-HOST-PARSE-001 |
 | `_ERR` suffix convention | `design.md` §3.1/§3.4; tested by `test_plan.md` TC-SYS-002-01/02 | `host_design.md` §3.2; tested by `host_test_plan.md` TC-HOST-PARSE-002 |
 | usmart/data-frame coexistence on shared UART | `design.md` §3.5; tested by `test_plan.md` TC-COMM-005-01 | `host_design.md` §3.2 prefix filtering; tested by `host_test_plan.md` TC-HOST-PARSE-003 |
-| GUI-issued `SET_TIME:` command | `design.md` §3.5 reserved path; `test_plan.md` TC-COMM-004-01 (**deferred**) | `host_design.md` §3.4; `host_test_plan.md` TC-HOST-GUI-003 (**partially deferred**, same reason) |
+| GUI-issued `SET_TIME:` command | `design.md` §3.5 (implemented, try_handle_set_time_command); `test_plan.md` TC-COMM-004-01 (now executable) | `host_design.md` §3.4 (implemented); `host_test_plan.md` TC-HOST-GUI-003 |
 | Full end-to-end conformance | `test_plan.md` §7 24h soak (TC-SYS-001-01) exercises the firmware side continuously | `host_test_plan.md` TC-HOST-HW-001 is the one case that actually connects both sides together |
 
-The `SET_TIME:` command is the only contract item currently blocked on both sides simultaneously (deferred in both test plans for the same reason: no firmware-side command parser exists yet). Everything else is independently verifiable today.
+The `SET_TIME:` command, previously the only contract item blocked on both sides simultaneously, is now fully implemented on both ends.
 
 ## 4. Coverage Gap Analysis
 
-- **§6.4 GUI channel:** Same gap as noted in the firmware `traceability_matrix.md` — intentional, tracked, not silently missing. Closes when the firmware-side `SET_TIME:` parser is implemented (currently a reserved/placeholder path per `design.md` §3.5).
 - **TC-HOST-HW-001:** The only host-side test that cannot run purely against `SimulatedReader`. This is expected — some amount of "does the real thing actually work end-to-end" verification can never be fully replaced by simulation, and this matrix exists partly to make that boundary explicit rather than implicit.
 
 ## Revision History
@@ -51,3 +50,4 @@ The `SET_TIME:` command is the only contract item currently blocked on both side
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-07-16 | Initial baseline: host-side traceability table, firmware↔host bridge-point cross-reference, and coverage gap analysis |
+| 1.1 | 2026-07-23 | §6.4 GUI channel (SET_TIME:) updated to Full coverage on both firmware and host sides. Removed from coverage gap analysis. |

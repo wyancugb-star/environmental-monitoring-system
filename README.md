@@ -36,6 +36,7 @@ This project follows a full V-model workflow — requirements → design → imp
 - **Anti-flicker display**: partial/delta redraw for progress bars and large-font fields, avoiding full-screen clears at 1 Hz
 - **Watchdog-protected main loop**: independent watchdog (IWDG) fed every loop iteration; usmart command handling runs from the main loop rather than an interrupt context, avoiding a deadlock class of bug documented in `docs/debug_log.md`
 - **Host-side pipeline**: a serial reader (real hardware or a hardware-independent simulator), a resilient line parser, and SQLite-backed storage with time-range queries — developed and tested independently of firmware availability
+- **GUI-issued RTC time set**: the host GUI can set the device's RTC time via a `SET_TIME:` command over UART, parsed on the firmware side and coexisting with the usmart channel — both call the same `set_rtc_time()`, so persistence/echo behavior is identical regardless of which channel issued the command
 
 ## Data Format
 
@@ -121,7 +122,6 @@ This project follows a V-model documentation set. Each document traces to the on
 - **Host GUI** (PyQt5): live readout, chart, RTC-set control — not yet implemented
 - **`SerialReader` hardware-in-the-loop test**: deferred, requires a connected board (`@pytest.mark.hardware`, not yet written)
 - **24-hour soak test**: planned per `test_plan.md` TC-SYS-001-01, not yet executed
-- **GUI-issued RTC set command** (`SET_TIME:` over UART, alongside usmart): reserved in the design, not yet implemented on the firmware side
 
 ## Out of Scope (this iteration)
 

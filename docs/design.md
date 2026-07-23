@@ -1,8 +1,8 @@
 # Design Document
 ## Environmental Monitoring System
 
-**Document Version:** 1.1
-**Date:** 2026-07-16
+**Document Version:** 1.2
+**Date:** 2026-07-23 (updated from 2026-07-20 baseline)
 **Author:** Yan
 **Status:** Baseline
 **Parent Document:** `requirements_spec.md` v1.0 — every design element below traces back to a REQ-ID from that document; see §8 for the full mapping.
@@ -153,7 +153,7 @@ void uart_tx_frame(const char *date, const char *time, const SensorData_t *data)
 
 ### 3.5 `usmart` — Debug Console (existing, reused) + Reserved GUI Command Path
 
-usmart remains the primary/debug interface for `set_rtc_time()` in v1.0 (existing integration from `03-lcd-fsmc-usmart`, extended by registering `set_rtc_time()` as a callable command). A separate lightweight text-command path (e.g. `SET_TIME:YYYY-MM-DD,HH:MM:SS\n` parsed in the main loop) is reserved for when host-side GUI development begins, so the GUI doesn't need to speak usmart's call protocol. Both can coexist on USART1 (§6.4) since they parse RX independently and call the same underlying `set_rtc_time()`. Traces to: REQ-COMM-003.
+usmart remains the primary/debug interface for `set_rtc_time()` in v1.0 (existing integration from `03-lcd-fsmc-usmart`, extended by registering `set_rtc_time()` as a callable command). A separate lightweight text-command path (`SET_TIME:YYYY-MM-DD,HH:MM:SS\n`, parsed by `try_handle_set_time_command()` in `rtc_mgr.c`, checked before falling through to `usmart_execute()`) lets the GUI issue RTC-set commands without speaking usmart's call protocol. Both paths call the same `set_rtc_time()`, so persistence (REQ-SYS-004) and the confirmation echo are identical regardless of which channel issued the command.
 
 ### 3.6 `main.c` — Scheduler & Watchdog
 
@@ -250,3 +250,6 @@ firmware/
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-07-16 | Initial baseline: module breakdown, interfaces, main loop scheduling, IWDG placement rationale, anti-flicker LCD design, file layout, and full requirements traceability |
+| 1.1 | 2026-07-20 | §3.3 rewritten to match actual implementation: custom Font_48/Font_72 glyph rendering (built-in ASCII font's max size was too small), per-field delta-redraw text tracking, static bar outlines + min/max axis labels drawn once, fixed (non-threshold-colored) bar fill -- dropped the earlier blue/green/red temperature color-coding idea in favor of a single fixed color. §6 file layout adds font.c/.h. §7 removes the now-resolved light sensor ADC channel item. |
+| 1.2 | 2026-07-23 | §3.5 updated: SET_TIME: GUI command channel is now implemented (try_handle_set_time_command() in rtc_mgr.c), not just reserved. Both usmart and SET_TIME: paths confirmed to share set_rtc_time(), so persistence and echo behavior are identical regardless of channel. |
+

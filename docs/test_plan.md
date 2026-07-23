@@ -1,8 +1,8 @@
 # Test Plan
 ## STM32 Environmental Monitoring System
 
-**Document Version:** 1.0
-**Date:** 2026-07-16
+**Document Version:** 1.1
+**Date:** 2026-07-23 (updated from 2026-07-16 baseline)
 **Author:** Yan
 **Status:** Baseline
 **Parent Documents:** `requirements_spec.md` v1.1, `design.md` v1.0 — every test case below traces to a REQ-ID; see §7 for the full matrix.
@@ -136,9 +136,15 @@ Each test case follows this structure:
 
 **Expected Result:** Echo line reads exactly `RTC SET OK: 2026-07-16 14:00:00`. Subsequent UART frames show DATE/TIME advancing correctly from that set point (e.g. `14:00:05` five seconds later).
 
-### TC-COMM-004-01 (Deferred — requires host GUI): GUI-issued `SET_TIME:` command
+### TC-COMM-004-01: GUI-issued `SET_TIME:` command sets the RTC
 **Traces to:** REQ-COMM-003 (§6.4 reserved GUI channel), `design.md` §3.5
-**Status:** Not executable until host-side GUI/command parser exists. Placeholder retained here so it isn't lost from the traceability chain once that work starts.
+**Preconditions:** DUT running normally, host GUI connected via `SerialReader` (real hardware mode).
+**Steps:**
+1. In the GUI, select a date/time via the picker and click "Set RTC Time".
+2. Observe the UART output.
+3. Wait a few seconds, confirm subsequent DATE/TIME fields advance correctly from the set value.
+
+**Expected Result:** Echo line reads `RTC SET OK: <date> <time>` matching what was selected in the GUI, identical in format to the usmart-issued echo (TC-COMM-003-01). Subsequent frames show DATE/TIME advancing correctly.
 
 ### TC-COMM-005-01: usmart and data-frame traffic coexist without corruption
 **Traces to:** §6.4 UART Channel Sharing
@@ -281,3 +287,4 @@ Every REQ-ID from `requirements_spec.md` v1.1 has at least one test case above; 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-07-16 | Initial baseline: test environment, test case format, full test case set covering every REQ-ID in requirements_spec.md v1.1 (including REQ-SYS-004 and §6.4), pass/fail summary template, and traceability matrix |
+| 1.1 | 2026-07-23 | TC-COMM-004-01 updated from deferred/placeholder to a fully executable test case, now that both the host GUI's Set RTC Time control and the firmware's SET_TIME: command parser are implemented |
