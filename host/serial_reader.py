@@ -18,6 +18,13 @@ class SerialReader:
         raw = self._ser.readline()
         return raw.decode("ascii", errors="replace")
     
+    def write_line(self, text):
+        """
+        Send a text command to the real device over UART, e.g. for the
+        GUI-issued SET_TIME: command (requirements_spec.md §6.4).
+        """
+        self._ser.write(text.encode("ascii"))
+    
     def close(self):
         self._ser.close()
 
@@ -74,4 +81,13 @@ class SimulatedReader:
             light_err_suffix = "_ERR"
 
         return f"DATE:{date_str},TIME:{time_str},TEMP:{self.temp:.1f}{temp_err_suffix},LIGHT:{self.light}{light_err_suffix}"
+    
+    def write_line(self, text):
+        """
+        Simulated mode has no real device to send to -- just print what
+        would have been sent, so the GUI's Set RTC Time button still gives
+        visible feedback during development/testing without hardware.
+        """
+        print(f"[SimulatedReader] would send: {text!r}")
+
     

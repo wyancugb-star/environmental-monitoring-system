@@ -4,7 +4,6 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from parser import parse_line
-from serial_reader import SerialReader
 from serial_reader import SimulatedReader
 
 def test_simulated_output():
